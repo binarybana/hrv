@@ -17,23 +17,23 @@
             fetch('api')
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById("fan1").value = data.fan1_speed;
-                    document.getElementById("fan2").value = data.fan2_speed;
-                    document.getElementById("fan1_output").value = data.fan1_speed;
-                    document.getElementById("fan2_output").value = data.fan2_speed;
+                    document.getElementById("fan1").value = Math.round(data.fan1_speed * 100);
+                    document.getElementById("fan2").value = Math.round(data.fan2_speed * 100);
+                    document.getElementById("fan1_output").value = Math.round(data.fan1_speed * 100);
+                    document.getElementById("fan2_output").value = Math.round(data.fan2_speed * 100);
                 });
         }
 
         const update_fans = (ev) => {
-            let fan1 = document.getElementById("fan1").value;
-            let fan2 = document.getElementById("fan2").value;
+            let fan1 = document.getElementById("fan1").value / 100.0;
+            let fan2 = document.getElementById("fan2").value / 100.0;
             fetch('api',
                 {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ fan1_speed: parseInt(fan1), fan2_speed: parseInt(fan2) })
+                    body: JSON.stringify({ fan1_speed: parseFloat(fan1), fan2_speed: parseFloat(fan2) })
                 })
                 .then(response => console.log(response));
         }

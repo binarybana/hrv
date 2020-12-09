@@ -1,9 +1,10 @@
+use std::env;
+use std::sync::{Arc, Mutex};
+
 use warp::http::StatusCode;
 use warp::Filter;
 
 use serde::{Deserialize, Serialize};
-
-use std::sync::{Arc, Mutex};
 
 #[cfg(target_arch = "aarch64")]
 mod hw;
@@ -35,9 +36,17 @@ fn create_api(
         .and(json_body())
         .map(|db: Db, new_config: Config| {
             let mut db = db.lock().expect("Couldnt unlock db");
-            (*db).fan1_speed = new_config.fan1_speed;
-            (*db).fan2_speed = new_config.fan2_speed;
-            Ok(StatusCode::CREATED)
+            if 0.0 <= new_config.fan1_speed
+                && new_config.fan1_speed <= 1.0
+                && 0.0 <= new_config.fan2_speed
+                && new_config.fan2_speed <= 1.0
+            {
+                (*db).fan1_speed = new_config.fan1_speed;
+                (*db).fan2_speed = new_config.fan2_speed;
+                Ok(StatusCode::CREATED)
+            } else {
+                Ok(StatusCode::BAD_REQUEST)
+            }
         });
 
     let read_config = warp::path!("api")
@@ -64,6 +73,13 @@ async fn main() {
     #[cfg(target_arch = "aarch64")]
     hw::setup_hardware(config.clone()).expect("Can't setup PWM");
 
+    if env::var_os("RUST_LOG").is_none() {
+        // Set `RUST_LOG=todos=debug` to see debug logs,
+        // this only shows access logs.
+        env::set_var("RUST_LOG", "hrv=info");
+    }
+    pretty_env_logger::init();
+    let root = root.with(warp::log("hrv"));
     warp::serve(root).run(([0, 0, 0, 0], 8000)).await;
 }
 
@@ -96,7 +112,7 @@ mod tests {
             .method("POST")
             .path("/api")
             .json(&Config {
-                fan1_speed: 10.0,
+                fan1_speed: 0.2,
                 fan2_speed: 1.0,
             })
             .reply(&api)
@@ -108,9 +124,20 @@ mod tests {
         assert_eq!(
             serde_json::from_slice::<Config>(resp.body()).expect("Convert to json"),
             Config {
-                fan1_speed: 10.0,
-                fan2_speed: 1.0
+                fan1_speed: 0.2,
+                fan2_speed: 1.0,
             }
         );
+
+        let resp = request()
+            .method("POST")
+            .path("/api")
+            .json(&Config {
+                fan1_speed: 10.2,
+                fan2_speed: 1.0,
+            })
+            .reply(&api)
+            .await;
+        assert_eq!(resp.status(), StatusCode::BAD_REQUEST);
     }
 }
