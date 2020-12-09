@@ -1,0 +1,22 @@
+[package]
+name = "hrv"
+version = "0.1.0"
+authors = ["Jason Knight <Jason@JasonKnight.us>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+warp = "0.2.5"
+tokio = { version = "0.2", features = ["full"] }
+rppal = { version = "0.11.3", features = ["hal-unproven"], git="https://github.com/binarybana/rppal", branch="binarybana/pwm_error" }
+anyhow = "1.0.34"
+dht-sensor = "0.1.1"
+# dht-sensor = { path="../../dht-sensor" }
+# dht-sensor = { git="https://github.com/binarybana/dht-sensor", rev="22ccf86" }
+embedded-hal = "0.2.4"
+embedded-ccs811 = "0.2.0"
+nb = "1.0.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0.60"
+

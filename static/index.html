@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>HRV Control Panel</title>
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/skeleton.css">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+
+    <script type="text/javascript">
+        const load_fan_data = () => {
+            fetch('api')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("fan1").value = data.fan1_speed;
+                    document.getElementById("fan2").value = data.fan2_speed;
+                    document.getElementById("fan1_output").value = data.fan1_speed;
+                    document.getElementById("fan2_output").value = data.fan2_speed;
+                });
+        }
+
+        const update_fans = (ev) => {
+            let fan1 = document.getElementById("fan1").value;
+            let fan2 = document.getElementById("fan2").value;
+            fetch('api',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ fan1_speed: parseInt(fan1), fan2_speed: parseInt(fan2) })
+                })
+                .then(response => console.log(response));
+        }
+        const entry = () => {
+            let data = load_fan_data();
+            document.getElementById("fan1").onmouseup = update_fans;
+            document.getElementById("fan2").onmouseup = update_fans;
+            console.log("Page entry detected!");
+        }
+        window.onload = entry;
+    </script>
+</head>
+
+<body>
+
+    <!-- Primary Page Layout
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+    <div class="container">
+        <div class="row">
+            <div class="one-half column" style="margin-top: 25%">
+                <h4>HRV - Control panel</h4>
+                <h5>Current fan speeds</h5>
+                <div>
+                    <label for="fan1">Fan 1</label>
+                    <input type="range" id="fan1" name="Fan1" min="0" max="100"
+                        oninput="this.nextElementSibling.value = this.value">
+                    <output id="fan1_output">0</output>
+                </div>
+                <div>
+                    <label for="fan2">Fan 2</label>
+                    <input type="range" id="fan2" name="Fan2" min="0" max="100"
+                        oninput="this.nextElementSibling.value = this.value">
+                    <output id="fan2_output">0</output>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- End Document
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+</body>
+
+</html>
